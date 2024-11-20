@@ -35,9 +35,8 @@ const LoginPage = () => {
       },
       body: JSON.stringify(formData),
     });
-
-    if (res.ok) {
-      const data = await res.json();
+    const data = await res.json();
+    if (res.ok && data.role === "User") {
       Cookies.set('token', data.token, { expires: 1, path: '/'});
       Cookies.set('role', data.role, { expires: 1, path: '/'});
       console.log('Token Set:', Cookies.get('token'));
@@ -45,8 +44,7 @@ const LoginPage = () => {
 
       redirect('/v1/home');
     } else {
-      const errorData = await res.json();
-      setErrorMessage(errorData.error || "Login failed");
+      setErrorMessage("Login failed");
     }
 
     setFormData({ email: "", password: "" });
@@ -95,6 +93,7 @@ const LoginPage = () => {
         <button className="btn btn-outline" type="submit">
           Login
         </button>
+        {errorMessage}
       </form>
     </div>
     </>

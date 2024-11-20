@@ -1,6 +1,7 @@
 "use client";
 import React, { useState } from "react";
 import TopNav from "../components/TopNav";
+import { redirect } from "next/navigation";
 
 interface FormData {
   name: string;
@@ -15,6 +16,7 @@ const RegisterPage = () => {
     password: "",
   })
   const [formData, setFormData] = useState<FormData>(initialForm);
+  const [registerError, setRegisterError] = useState();
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -38,9 +40,15 @@ const RegisterPage = () => {
       },
       body: JSON.stringify(formData), 
     });
-  
-    const data = await res.json();
-    console.log(data);
+    if(res.ok){
+      const data = await res.json();
+      console.log(data);
+      redirect('/login')
+    }else{
+      const data = await res.json();
+      setRegisterError(data.error)
+    }
+
   };
   
   return (
@@ -97,6 +105,7 @@ const RegisterPage = () => {
         <button className="btn btn-outline " type="submit">
           Register
         </button>
+        {registerError}
       </form>
     </div>
     </>
