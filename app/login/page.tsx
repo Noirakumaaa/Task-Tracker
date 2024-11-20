@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import Cookies from "js-cookie"; // Import js-cookie
+import Cookies from "js-cookie"; 
 import { redirect } from 'next/navigation';
 import TopNav from "../components/TopNav";
 
@@ -38,8 +38,8 @@ const LoginPage = () => {
 
     if (res.ok) {
       const data = await res.json();
-      await Cookies.set('token', data.token, { expires: 1, path: '/'});
-      await Cookies.set('role', data.role, { expires: 1, path: '/'});
+      Cookies.set('token', data.token, { expires: 1, path: '/'});
+      Cookies.set('role', data.role, { expires: 1, path: '/'});
       console.log('Token Set:', Cookies.get('token'));
       
 
