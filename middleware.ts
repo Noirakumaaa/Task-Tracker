@@ -15,13 +15,14 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  if (request.url.includes('/api/login')) {
+  if (request.url.includes('/api/login') || request.url.includes('/api/register')) {
     const response = NextResponse.next();
     response.headers.set('Access-Control-Allow-Origin', corsHeaders['Access-Control-Allow-Origin']);
     response.headers.set('Access-Control-Allow-Methods', corsHeaders['Access-Control-Allow-Methods']);
     response.headers.set('Access-Control-Allow-Headers', corsHeaders['Access-Control-Allow-Headers']);
     return response;
   }
+  
 
   const token = request.cookies.get('token');
   const secretKey = new TextEncoder().encode(process.env.SECRET_KEY);
