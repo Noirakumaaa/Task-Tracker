@@ -8,7 +8,6 @@ export async function middleware(request: NextRequest) {
     'Access-Control-Allow-Headers': 'Content-Type, Authorization',
   };
 
-  // Handle OPTIONS preflight request
   if (request.method === 'OPTIONS') {
     return new NextResponse(null, {
       status: 200,
@@ -16,18 +15,18 @@ export async function middleware(request: NextRequest) {
     });
   }
 
-  // Add CORS headers for all requests
+
   const response = NextResponse.next();
   response.headers.set('Access-Control-Allow-Origin', corsHeaders['Access-Control-Allow-Origin']);
   response.headers.set('Access-Control-Allow-Methods', corsHeaders['Access-Control-Allow-Methods']);
   response.headers.set('Access-Control-Allow-Headers', corsHeaders['Access-Control-Allow-Headers']);
 
-  // Allow public routes like login and register to pass without token verification
+
   if (request.url.includes('/api/login') || request.url.includes('/api/register')) {
     return response;
   }
 
-  // Token verification for protected routes
+
   const token = request.cookies.get('token');
   const secretKey = new TextEncoder().encode(process.env.SECRET_KEY);
 
