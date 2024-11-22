@@ -7,10 +7,22 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Task {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  user_id     String   @db.ObjectId
+  name        String
+  description String
+  status      String   @default("PENDING")
+  start_date  DateTime @default(now())
+  deadline    DateTime
+  created_at  DateTime @default(now())
+  updated_at  DateTime @updatedAt
+}
+
 model User {
-  id           String   @id @default(auto()) @map("_id") @db.ObjectId
-  name         String
-  email        String   @unique
-  password     String
-  RegisteredAt DateTime @default(now())
+  id       String @id @default(auto()) @map("_id") @db.ObjectId
+  email    String @unique
+  name     String
+  password String
+  role     String @default("User")
 }

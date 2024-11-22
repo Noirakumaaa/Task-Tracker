@@ -1,48 +1,43 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { jwtVerify } from 'jose';
+import { NextRequest, NextResponse } from "next/server";
+import { jwtVerify } from "jose";
 
 export async function middleware(request: NextRequest) {
+  console.log(`Request received at: ${request.url}`); // Log the URL of the request
+
   const corsHeaders = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization",
   };
-
-  if (request.method === 'OPTIONS') {
-    return new NextResponse(null, {
-      status: 200,
-      headers: corsHeaders,
-    });
+  if (request.method === "OPTIONS") {
+    console.log("CORS preflight request"); // Log preflight requests
+    return NextResponse.json(null, { status: 200, headers: corsHeaders });
   }
+  if (["/api/login", "/api/register"].some((path) => request.url.includes(path))) {
 
+    const response = NextResponse.next();
+    Object.entries(corsHeaders).forEach(([key, value]) => {
+      response.headers.set(key, value);
+    });
 
-  const response = NextResponse.next();
-  response.headers.set('Access-Control-Allow-Origin', corsHeaders['Access-Control-Allow-Origin']);
-  response.headers.set('Access-Control-Allow-Methods', corsHeaders['Access-Control-Allow-Methods']);
-  response.headers.set('Access-Control-Allow-Headers', corsHeaders['Access-Control-Allow-Headers']);
-
-
-  if (request.url.includes('/api/login') || request.url.includes('/api/register')) {
     return response;
   }
-
-
-  const token = request.cookies.get('token');
-  const secretKey = new TextEncoder().encode(process.env.SECRET_KEY);
-
-  if (!token) {
-    return NextResponse.redirect(new URL('/', request.url));
+  const userToken = request.cookies.get("token");
+  if (!userToken) {
+    return NextResponse.redirect(new URL("/", request.url));
   }
-
+  console.log("6")
   try {
-    const { payload } = await jwtVerify(token.value, secretKey);
-    response.headers.set('x-user', JSON.stringify(payload));
+    const secretKey = new TextEncoder().encode(process.env.SECRET_KEY);
+    const { payload } = await jwtVerify(userToken.value, secretKey);
+    const response = NextResponse.next();
+    response.headers.set("x-user", JSON.stringify(payload));
     return response;
   } catch (error) {
-    return NextResponse.json({ error: 'Invalid token', details: error }, { status: 401 });
+    return NextResponse.json({ error: "Invalid token", details: error }, { status: 401 });
   }
 }
 
 export const config = {
-  matcher: ['/api/v1/:path*', '/v1/:path*', '/api/login', '/api/register'],
+  matcher: ["/v1/:path*"],
 };

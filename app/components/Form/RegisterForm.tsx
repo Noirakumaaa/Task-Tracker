@@ -1,7 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import TopNav from "../components/TopNav";
-import { redirect } from "next/navigation";
+import Notification from "@/app/components/Notification";
 
 interface FormData {
   name: string;
@@ -9,7 +8,8 @@ interface FormData {
   password: string;
 }
 
-const RegisterPage = () => {
+const RegisterForm = () => {
+  const [showNotification, setShowNotification] = useState(false)
   const [initialForm] = useState<FormData>({
     name: "",
     email: "",
@@ -41,9 +41,9 @@ const RegisterPage = () => {
       body: JSON.stringify(formData), 
     });
     if(res.ok){
-      const data = await res.json();
-      console.log(data);
-      redirect('/login')
+      setShowNotification(true)
+
+
     }else{
       const data = await res.json();
       setRegisterError(data.error)
@@ -53,8 +53,7 @@ const RegisterPage = () => {
   
   return (
     <>
-    <TopNav />
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-[90%]">
       <form onSubmit={handleSubmit} className="flex justify-center items-center flex-col space-y-4 border w-1/3 h-2/3 rounded-2xl">
         <h1 className="text-xl font-bold mb-4">Register</h1>
         <div className="w-full max-w-xs">
@@ -107,9 +106,10 @@ const RegisterPage = () => {
         </button>
         {registerError}
       </form>
+      {showNotification ? (<Notification NotificationName="Register Successfully" NotificationLink="login" closeNotification={(e)=>setShowNotification(e)}/>) : (null)}
     </div>
     </>
   );
 };
 
-export default RegisterPage;
+export default RegisterForm;

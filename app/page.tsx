@@ -1,10 +1,11 @@
-import TopNav from "./components/TopNav"
-
+import TopNav from "./components/TopNav";
 export default function Home() {
+
+
   return (
     <>
     <TopNav />
-        <div className="border h-screen flex justify-center items-center">
+        <div className="border flex justify-center items-center h-[90%]">
       
       <h1>Landing Page</h1>
     </div>

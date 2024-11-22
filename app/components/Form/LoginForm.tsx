@@ -1,20 +1,23 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Cookies from "js-cookie"; 
-import { redirect } from 'next/navigation';
-import TopNav from "../components/TopNav";
+import { useRouter } from "next/navigation";
+import Notification from "../Notification";
 
 interface FormData {
   email: string;
   password: string;
 }
 
-const LoginPage = () => {
+const LoginForm = () => {
   const [formData, setFormData] = useState<FormData>({
     email: "",
     password: "",
   });
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [showNotification, setShowNotification] = useState(false);
+  const [loading, setLoading] = useState(false)
+  const router = useRouter();
 
   const handleFormChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -27,6 +30,8 @@ const LoginPage = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMessage(null);
+    setShowNotification(true);
+    setLoading(true)
 
     const res = await fetch("http://localhost:3000/api/login", {
       method: "POST",
@@ -36,13 +41,14 @@ const LoginPage = () => {
       body: JSON.stringify(formData),
     });
     const data = await res.json();
-    if (res.ok && data.role === "User") {
-      Cookies.set('token', data.token, { expires: 1, path: '/'});
-      Cookies.set('role', data.role, { expires: 1, path: '/'});
-      console.log('Token Set:', Cookies.get('token'));
-      
 
-      redirect('/v1/home');
+    if (res.ok && data.role === "User") {
+      Cookies.set('token', data.token );
+      Cookies.set('role', data.role);
+      Cookies.set('user_id', data.id);
+
+      // Show notification after successful login
+      setLoading(false);
     } else {
       setErrorMessage("Login failed");
     }
@@ -50,10 +56,18 @@ const LoginPage = () => {
     setFormData({ email: "", password: "" });
   };
 
+  useEffect(() => {
+    if (showNotification) {
+      // After showing the notification for 2 seconds, redirect
+      setTimeout(() => {
+        router.push(`/v1/${Cookies.get('user_id')}`);
+      }, 2000); // 2 seconds timeout before redirect
+    }
+  }, [showNotification, router]);
+
   return (
     <>
-    <TopNav />
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-[90%]">
       <form
         onSubmit={handleSubmit}
         className="flex justify-center items-center flex-col space-y-4 border w-1/3 h-2/3 rounded-2xl"
@@ -93,11 +107,23 @@ const LoginPage = () => {
         <button className="btn btn-outline" type="submit">
           Login
         </button>
-        {errorMessage}
       </form>
+      {showNotification && (loading ? (
+        <Notification 
+        NotificationName="Loading" 
+        NotificationLink="Close" 
+        closeNotification={(e) => setShowNotification(e)} 
+      />
+      ): (
+        <Notification 
+          NotificationName="Login Successfully" 
+          NotificationLink="Close" 
+          closeNotification={(e) => setShowNotification(e)} 
+        />
+      ))}
     </div>
     </>
   );
 };
 
-export default LoginPage;
+export default LoginForm;

@@ -9,6 +9,8 @@ const DropDown = () => {
 
   const Logout = () => {
     Cookies.remove('token', { path: '/' });
+    Cookies.remove('role', { path: '/' });
+    Cookies.remove('user_id', { path: '/' });
     redirect('/')
   }
 
@@ -22,9 +24,6 @@ const DropDown = () => {
         tabIndex={0}
         className="dropdown-content menu bg-base-100 rounded-box z-[1] w-52 p-2 shadow"
       >
-        <li>
-          <button>Item 1</button>
-        </li>
         <li>
         <button onClick={Logout}>Logout</button>
         </li>

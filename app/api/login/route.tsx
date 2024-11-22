@@ -3,8 +3,13 @@ import prisma from "@/prisma/client";
 import bcrypt from 'bcrypt';
 import jwt from 'jsonwebtoken';
 
+interface UserLoginData {
+  email: string;
+  password: string;
+}
+
 export async function POST(request: NextRequest) {
-  const body = await request.json();
+  const body: UserLoginData = await request.json();
 
   const userLogin = await prisma.user.findUnique({
     where: {
@@ -12,29 +17,35 @@ export async function POST(request: NextRequest) {
     },
   });
 
-  if (userLogin) {
-    const passwordValid = await bcrypt.compare(body.password, userLogin.password);
-
-    if (passwordValid) {
-      const token = jwt.sign(
-        { userId: userLogin.id, email: userLogin.email }, 
-        process.env.SECRET_KEY!, 
-        { expiresIn: '1h' } 
-      );
-
-      return NextResponse.json({
-        Status: "Login Successfully",
-        token: token ,
-        role : "User"
-      });
-    }
-
+  if (!userLogin) {
     return NextResponse.json({
-      Status: "Wrong Credentials"
-    });
+      Status: "User Not Found",
+    }, { status: 404 });
   }
 
+  const passwordValid = await bcrypt.compare(body.password, userLogin.password);
+
+  if (!passwordValid) {
+    return NextResponse.json({
+      Status: "Wrong Credentials",
+    }, { status: 401 });
+  }
+
+  if (!process.env.SECRET_KEY) {
+    return NextResponse.json({
+      Status: "Internal Server Error, Missing Secret Key"
+    }, { status: 500 });
+  }
+
+  const token = jwt.sign(
+    { userId: userLogin.id, email: userLogin.email },
+    process.env.SECRET_KEY!,
+  );
+
   return NextResponse.json({
-    Status: "User Not Found"
+    Status: "Login Successfully",
+    token: token,
+    role: "User",
+    id: userLogin.id
   });
 }
